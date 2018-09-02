@@ -97,49 +97,30 @@ resource "aws_default_route_table" "wp_private_rt" {
   }
 }
 
-resource "aws_subnet" "wp_public1_subnet" {
+resource "aws_subnet" "wp_public_subnets" {
+  count = 2
   vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["public1"]}"
+  cidr_block              = "${var.cidrs["public${count.index + 1}"]}"
   map_public_ip_on_launch = true
-  availability_zone       = "${data.aws_availability_zones.available.names[0]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
 
   tags {
-    Name = "wp_public1"
+    Name = "wp_public${count.index + 1}"
   }
 }
 
-resource "aws_subnet" "wp_public2_subnet" {
+resource "aws_subnet" "wp_private_subnets" {
+  count = 2
   vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["public2"]}"
-  map_public_ip_on_launch = true
-  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
-
-  tags {
-    Name = "wp_public2"
-  }
-}
-
-resource "aws_subnet" "wp_private1_subnet" {
-  vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["private1"]}"
+  cidr_block              = "${var.cidrs["private${count.index + 1}"]}"
   map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[0]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
 
   tags {
-    Name = "wp_private1"
+    Name = "wp_private${count.index + 1}"
   }
 }
 
-resource "aws_subnet" "wp_private2_subnet" {
-  vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["private2"]}"
-  map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
-
-  tags {
-    Name = "wp_private2"
-  }
-}
 
 #create S3 VPC endpoint
 resource "aws_vpc_endpoint" "wp_private-s3_endpoint" {
@@ -164,68 +145,36 @@ resource "aws_vpc_endpoint" "wp_private-s3_endpoint" {
 POLICY
 }
 
-resource "aws_subnet" "wp_rds1_subnet" {
+resource "aws_subnet" "wp_rds_subnets" {
+  count = 3
   vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["rds1"]}"
+  cidr_block              = "${var.cidrs["rds${count.index + 1}"]}"
   map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[0]}"
+  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
 
   tags {
-    Name = "wp_rds1"
-  }
-}
-
-resource "aws_subnet" "wp_rds2_subnet" {
-  vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["rds2"]}"
-  map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[1]}"
-
-  tags {
-    Name = "wp_rds2"
-  }
-}
-
-resource "aws_subnet" "wp_rds3_subnet" {
-  vpc_id                  = "${aws_vpc.wp_vpc.id}"
-  cidr_block              = "${var.cidrs["rds3"]}"
-  map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[2]}"
-
-  tags {
-    Name = "wp_rds3"
+    Name = "wp_rds${count.index + 1}"
   }
 }
 
 # Subnet Associations
 
-resource "aws_route_table_association" "wp_public_assoc" {
-  subnet_id      = "${aws_subnet.wp_public1_subnet.id}"
+resource "aws_route_table_association" "wp_public_assocs" {
+  count = 2
+  subnet_id      = "${aws_subnet.wp_public_subnets.*.id[count.index]}"
   route_table_id = "${aws_route_table.wp_public_rt.id}"
 }
 
-resource "aws_route_table_association" "wp_public2_assoc" {
-  subnet_id      = "${aws_subnet.wp_public2_subnet.id}"
-  route_table_id = "${aws_route_table.wp_public_rt.id}"
-}
-
-resource "aws_route_table_association" "wp_private1_assoc" {
-  subnet_id      = "${aws_subnet.wp_private1_subnet.id}"
-  route_table_id = "${aws_default_route_table.wp_private_rt.id}"
-}
-
-resource "aws_route_table_association" "wp_private2_assoc" {
-  subnet_id      = "${aws_subnet.wp_private2_subnet.id}"
+resource "aws_route_table_association" "wp_private_assocs" {
+  count = 2
+  subnet_id      = "${aws_subnet.wp_private_subnets.*.id[count.index]}"
   route_table_id = "${aws_default_route_table.wp_private_rt.id}"
 }
 
 resource "aws_db_subnet_group" "wp_rds_subnetgroup" {
   name = "wp_rds_subnetgroup"
 
-  subnet_ids = ["${aws_subnet.wp_rds1_subnet.id}",
-    "${aws_subnet.wp_rds2_subnet.id}",
-    "${aws_subnet.wp_rds3_subnet.id}",
-  ]
+  subnet_ids = ["${aws_subnet.wp_rds_subnets.*.id}" ]
 
   tags {
     Name = "wp_rds_sng"
@@ -384,7 +333,7 @@ resource "aws_instance" "wp_dev" {
   key_name               = "${aws_key_pair.wp_auth.id}"
   vpc_security_group_ids = ["${aws_security_group.wp_dev_sg.id}"]
   iam_instance_profile   = "${aws_iam_instance_profile.s3_access_profile.id}"
-  subnet_id              = "${aws_subnet.wp_public1_subnet.id}"
+  subnet_id              = "${aws_subnet.wp_public_subnets.*.id[0]}"
 
   provisioner "local-exec" {
     command = <<EOD
@@ -408,9 +357,7 @@ EOD
 resource "aws_elb" "wp_elb" {
   name = "${var.domain_name}-elb"
 
-  subnets = ["${aws_subnet.wp_public1_subnet.id}",
-    "${aws_subnet.wp_public2_subnet.id}",
-  ]
+  subnets = ["${aws_subnet.wp_public_subnets.*.id}"]
 
   security_groups = ["${aws_security_group.wp_public_sg.id}"]
 
@@ -493,9 +440,7 @@ resource "aws_autoscaling_group" "wp_asg" {
   force_delete              = true
   load_balancers            = ["${aws_elb.wp_elb.id}"]
 
-  vpc_zone_identifier = ["${aws_subnet.wp_private1_subnet.id}",
-    "${aws_subnet.wp_private2_subnet.id}",
-  ]
+  vpc_zone_identifier = ["${aws_subnet.wp_private_subnets.*.id}" ]
 
   launch_configuration = "${aws_launch_configuration.wp_lc.name}"
 
