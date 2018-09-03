@@ -2,7 +2,9 @@ variable "vpc_cidr" {}
 variable "cidrs" {
   type = "map"
 }
-data "aws_availability_zones" "available" {}
+variable "availability_zones_names" {
+  type = "list"
+}
 variable "localip" {}
 variable "domain_name" {}
 variable "aws_region" {}

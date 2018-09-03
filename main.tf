@@ -18,6 +18,7 @@ module "vpc" {
   domain_name = "${var.domain_name}"
   localip = "${var.localip}"
   vpc_cidr = "${var.vpc_cidr}"
+  availability_zones_names = "${data.aws_availability_zones.available.names}"
 }
 
 #---------compute-----------

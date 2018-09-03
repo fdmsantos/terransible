@@ -46,7 +46,7 @@ resource "aws_subnet" "wp_public_subnets" {
   vpc_id                  = "${aws_vpc.wp_vpc.id}"
   cidr_block              = "${var.cidrs["public${count.index + 1}"]}"
   map_public_ip_on_launch = true
-  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
+  availability_zone       = "${var.availability_zones_names[count.index]}"
 
   tags {
     Name = "wp_public${count.index + 1}"
@@ -58,7 +58,7 @@ resource "aws_subnet" "wp_private_subnets" {
   vpc_id                  = "${aws_vpc.wp_vpc.id}"
   cidr_block              = "${var.cidrs["private${count.index + 1}"]}"
   map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
+  availability_zone       = "${var.availability_zones_names[count.index]}"
 
   tags {
     Name = "wp_private${count.index + 1}"
@@ -94,7 +94,7 @@ resource "aws_subnet" "wp_rds_subnets" {
   vpc_id                  = "${aws_vpc.wp_vpc.id}"
   cidr_block              = "${var.cidrs["rds${count.index + 1}"]}"
   map_public_ip_on_launch = false
-  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
+  availability_zone       = "${var.availability_zones_names[count.index]}"
 
   tags {
     Name = "wp_rds${count.index + 1}"
