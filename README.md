@@ -132,3 +132,10 @@ $ aws route53 create-reusable-delegation-set --caller-reference 1224 --profile s
 3. Execute terraform int
 4. Execute terraform apply
 5. Execute terraform destroy
+
+# Documentation
+
+[Original Repo](https://github.com/linuxacademy/terransible)
+
+[Infrastructure flowchart](https://www.lucidchart.com/documents/view/cde66bf1-8505-49b9-bcda-b1100a0f10b3/0)
+
