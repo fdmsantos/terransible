@@ -96,6 +96,7 @@ $ ssh-add -l
 ### Configure Aws Cli
 
 ** Use the credentials in .csv file **
+** Should configure default region **
 
 ```bash
 $ aws configure --profile superhero
@@ -123,3 +124,11 @@ $ aws route53 create-reusable-delegation-set --caller-reference 1224 --profile s
     }
 }
 ```
+
+## Deploy
+
+1. Clone project
+2. Edit terraform.tfvars and change the vars. (It's mandatory change local ip and delegation_set. Should use delegation obtained in prior step)
+3. Execute terraform int
+4. Execute terraform apply
+5. Execute terraform destroy
