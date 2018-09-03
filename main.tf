@@ -3,8 +3,6 @@ provider "aws" {
   profile = "${var.aws_profile}"
 }
 
-#data "aws_availability_zones" "available" {}
-
 #------------IAM----------------
 
 module "iam" {
