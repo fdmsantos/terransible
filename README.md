@@ -95,8 +95,8 @@ $ ssh-add -l
 
 ### Configure Aws Cli
 
-** Use the credentials in .csv file **
-** Should configure default region **
+**Use the credentials in .csv file**
+**Should configure default region**
 
 ```bash
 $ aws configure --profile superhero
@@ -106,7 +106,7 @@ $ aws ec2 describe-instances --profile superhero --region us-east-1
 
 ### Create Delegation-Set
 
-** Execute the command and store ID Value**
+**Execute the command and store ID Value**
 
 ```bash
 $ aws route53 create-reusable-delegation-set --caller-reference 1224 --profile superhero
