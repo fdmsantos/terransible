@@ -1,4 +1,4 @@
 .idea
 terraform.tfstate
 terraform.tfstate.backup
-wordpress.retr
+wordpress.retry
