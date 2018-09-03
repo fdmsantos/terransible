@@ -9,7 +9,7 @@ module "iam" {
   source = "./iam"
 }
 
-#-------------VPC-----------
+#------------- VPC -----------
 
 module "vpc" {
   source                   = "./vpc"
@@ -21,7 +21,7 @@ module "vpc" {
   availability_zones_names = "${data.aws_availability_zones.available.names}"
 }
 
-#---------compute-----------
+#--------- Compute -----------
 
 module "compute" {
   source                  = "./compute"
@@ -56,7 +56,7 @@ module "compute" {
   rds_sg                  = "${module.vpc.wp_rds_sg_id}"
 }
 
-//#---------Route53-------------
+#--------- Route53 -------------
 
 module "route53" {
   source           = "./route53"
